@@ -5,6 +5,7 @@ import {
     View,
     TextInput,
     TouchableOpacity,
+    Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -15,7 +16,13 @@ const SignIn = () => {
     return (
         <SafeAreaView className="flex-1 bg-background">
             <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-                <View className="flex-1 justify-center items-center px-6">
+                <View className="flex-1  items-center px-6">
+                    {/* App Image */}
+                    <Image
+                        source={require("../assets/images/logo.png")}
+                        className=" w-48 h-48 mb-8 "
+
+                    />
                     {/* Heading */}
                     <Text className="font-display text-4xl text-primary mb-2">
                         Welcome Back

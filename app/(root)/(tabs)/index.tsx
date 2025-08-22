@@ -15,12 +15,7 @@ export default function Index() {
             <Link href="/sign-in" className="text-blue-500 mt-4">
                 Go to Sign In
             </Link>
-            <Link href="/explore" className="text-blue-500 mt-4">
-                Go to Explore
-            </Link>
-            <Link href="/profile" className="text-blue-500 mt-4">
-                Go to Profile
-            </Link>
+
             <Link href="/properties/123" className="text-blue-500 mt-4">
                 Go to Property 123
             </Link>

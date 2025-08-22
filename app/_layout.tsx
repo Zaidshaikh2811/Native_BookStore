@@ -6,6 +6,7 @@ export default function RootLayout() {
       headerShown: false,
       contentStyle: { backgroundColor: 'transparent' },
     }}
+    initialRouteName="(root)/(tabs)"
 
   />;
 }
