@@ -34,7 +34,7 @@ const Search = () => {
     };
 
     return (
-        <View className="flex-row items-center bg-white rounded-full px-3 py-2 shadow-md border border-gray-200">
+        <View className=" flex-row items-center bg-white rounded-full px-3 py-2 shadow-md border border-gray-200">
             <Ionicons name="search" size={22} color="#6B7280" />
             <TextInput
                 value={search}
