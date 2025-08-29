@@ -61,7 +61,3 @@ To reset the project to its initial state:
 ```bash
 npm run reset-project
 ```
-
-## License
-
-MIT
