@@ -6,8 +6,14 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Card, FeaturedCard } from "@/components/Card";
 import Filters from "@/components/Filters";
+import {useLocalSearchParams} from "expo-router";
 
 export default function Index() {
+
+    const params=useLocalSearchParams<{query?:string , filters?:string}>();
+
+    console.log(params);
+
     const user = {
         name: "John Doe",
         email: "john.doe@email.com",

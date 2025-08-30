@@ -5,7 +5,9 @@ import compression from 'compression';
 import cors from 'cors';
 import {config} from "./config/index.js";
 
-import routes from './routes/index.js';
+import users from './routes/users.js';
+import properties from './routes/properties.js';
+import auth from './routes/Auth.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 
 
@@ -23,7 +25,9 @@ app.use(morgan('dev'));
 
 // Routes
 
-app.use('/api', routes);
+app.use('/api/v1/auth', auth);
+app.use('/api/v1/users', users);
+app.use('/api/v1/properties', properties);
 
 // Error Handler
 app.use(errorHandler);

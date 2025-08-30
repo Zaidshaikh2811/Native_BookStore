@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { TextInput, View, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, usePathname, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -6,31 +6,53 @@ import {useDebouncedCallback} from "use-debounce";
 
 const Search = () => {
     const router = useRouter();
-    const path = usePathname();
-    const params = useLocalSearchParams<{ query?: string }>();
+    const pathname = usePathname();
+    const params = useLocalSearchParams<{ query?: string; filter?: string }>();
 
     const [search, setSearch] = useState(params.query || "");
 
-    const debounceSearch=useDebouncedCallback(
-        (text:string)=>{
-            setSearch(text);
-            handleSearchSubmit();
-        },500
-    )
+    // Update local state when URL params change
+    useEffect(() => {
 
+        setSearch(params.query || "");
+    }, [params.query]);
+
+    const handleSearchSubmit = (searchText: string = search) => {
+        // Build new URL with updated query parameter
+        const searchParams = new URLSearchParams();
+
+        // Set query parameter if there's search text
+        if (searchText.trim()) {
+            searchParams.set('query', searchText.trim());
+        }
+
+        // Preserve existing filter parameter if it exists
+        if (params.filter && params.filter !== 'All') {
+            searchParams.set('filter', params.filter);
+        }
+
+        // Build the new path
+        const queryString = searchParams.toString();
+        const newPath = queryString ? `${pathname}?${queryString}` : pathname;
+
+        // Navigate to new path
+        router.push(newPath);
+    };
+
+    const debounceSearch = useDebouncedCallback(
+        (text: string) => {
+            handleSearchSubmit(text);
+        }, 500
+    );
 
     const handleSearchChange = (text: string) => {
         setSearch(text);
+        debounceSearch(text);
     };
 
-    const handleSearchSubmit = () => {
-        const newPath = search
-            ? `/?query=${encodeURIComponent(search)}` // Use root path for home tab
-            : "/explore";
-
-        if (newPath !== path) {
-            router.push(newPath);
-        }
+    const handleClearSearch = () => {
+        setSearch("");
+        handleSearchSubmit("");
     };
 
     return (
@@ -38,7 +60,7 @@ const Search = () => {
             <Ionicons name="search" size={22} color="#6B7280" />
             <TextInput
                 value={search}
-                onChangeText={debounceSearch}
+                onChangeText={handleSearchChange}
                 placeholder="Search..."
                 placeholderTextColor="#9CA3AF"
                 className="flex-1 ml-2 text-base text-gray-800"

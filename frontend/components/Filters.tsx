@@ -1,18 +1,39 @@
 import React from 'react'
 import {ScrollView, Text, TouchableOpacity, View} from "react-native";
-import {useLocalSearchParams} from "expo-router";
+import {useLocalSearchParams, usePathname, useRouter} from "expo-router";
+
 
 
 const filters = ['All', 'Apartment', 'House', 'Villa', 'Studio', 'Condo'];
 
 
 const Filters = () => {
-    const params = useLocalSearchParams<{filter?:string}>();
+    const router = useRouter();
+    const pathname = usePathname();
+    const params = useLocalSearchParams<{ query?: string; filter?: string }>();
     const [selectedFilter, setSelectedFilter] = React.useState(params.filter || 'All');
 
-    const  handleCategory=(category:string) => {
+    const handleCategory = (category: string) => {
+        // Build new URL with updated filter parameter
+        const searchParams = new URLSearchParams();
 
-    }
+        // Preserve existing query parameter if it exists
+        if (params.query) {
+            searchParams.set('query', params.query);
+        }
+
+        // Set filter parameter (only if not 'All')
+        if (category !== 'All') {
+            searchParams.set('filter', category);
+        }
+
+        // Build the new path
+        const queryString = searchParams.toString();
+        const newPath = queryString ? `${pathname}?${queryString}` : pathname;
+
+        // Navigate to new path
+        router.push(newPath);
+    };
 
     return (
         <ScrollView
