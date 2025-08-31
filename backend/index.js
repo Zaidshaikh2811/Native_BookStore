@@ -1,7 +1,9 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import authRoutes from "./routes/authRoute.js";
+import authRoutes from "./routes/userRoute.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import {connectDB} from "./lib/db.js";
 
 
 dotenv.config();
@@ -34,7 +36,8 @@ app.get("/", (req, res) => {
 });
 
 
-app.use("/api/v1/auth",authRoutes)
+app.use("/api/v1/user",authRoutes)
+app.use("/api/v1/admin",adminRoutes)
 
 
 
@@ -45,7 +48,8 @@ app.use((req, res) => {
         message: `Route ${req.originalUrl} not found`
     });
 });
-// Global error handler
+
+
 app.use((err, req, res, next) => {
     console.error("Error:", err);
     res.status(500).json({
@@ -56,7 +60,9 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => {
+
     console.log(`Server is running on port ${port}`);
     console.log(`Test the server: http://localhost:${port}`);
     console.log(`Auth routes available at: http://localhost:${port}/api/v1/auth`);
+    connectDB();
 });
