@@ -1,5 +1,4 @@
  
-````markdown
 # Native BookStore
 
 A cross-platform mobile bookstore app built with **React Native (Expo)**, complete with a supporting backend to manage book listings, user accounts, and more.
