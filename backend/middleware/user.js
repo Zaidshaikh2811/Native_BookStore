@@ -18,7 +18,6 @@ const generateTokens = (user) => {
 
 }
 
-
 const validatePassword = (password) => {
     const minLength = 8;
     const hasUpperCase = /[A-Z]/.test(password);
@@ -40,27 +39,6 @@ const validatePassword = (password) => {
 }
 
 
-const decodeToken=(req)=>{
-    try{
-        const authHeader = req.headers.authorization;
-        const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-        console.log("Decoded Token:", token);
-
-        if (!token) {
-            return {
-
-                isValid: false,
-                message: "  No token provided"
-
-            }
-        }
-
-        const decoded= jsonwebtoken.verify(token, process.env.JWT_SECRET);
-        return {isValid: true , message: decoded};
-    }catch(error){
-        return null;
-    }
-}
 
 
 export const userLogin = async (req, res, next) => {
@@ -221,15 +199,17 @@ export const userSignup = async (req, res, next) => {
 
 export const getUserProfile =async (req, res, next) => {
     try{
-
-        const {isValid,message } = decodeToken(req);
-        if(!isValid){
+        console.log("user from req "+req.user);
+        console.log("decoded from req "+req.decoded.id);
+        console.log("admin from req "+req.isAdmin);
+        console.log("isAuthenticated from req "+req.isAuthenticated);
+        if(!req.isAuthenticated){
             return res.status(401).json({
                 status: "error",
-                message: "Invalid or missing token"
+                message: "User Not Authenticated"
             });
         }
-        const userId= message.id;
+        const userId= req.decoded.id;
 
 
         if(!userId){
@@ -263,14 +243,13 @@ export const updateUserProfile = async (req, res, next) => {
     try{
 
 
-        const {isValid,message } = decodeToken(req);
-        if(!isValid){
+        if(!req.isAuthenticated){
             return res.status(401).json({
                 status: "error",
-                message: "Invalid or missing token"
+                message: "User Not Authenticated"
             });
         }
-        const userId= message.id;
+        const userId= req.decoded.id;
 
 
         if(!userId){
@@ -329,7 +308,6 @@ export const updateUserProfile = async (req, res, next) => {
         next(error);
     }
 }
-
 
 export const changePassword=async(req, res, next) => {
     try{
@@ -479,7 +457,6 @@ export const forgotPassword= async(req, res, next) => {
     }
 }
 
-
 export const resetPassword= async(req, res, next) => {
     try{
         const { token, newPassword } = req.body;
@@ -500,7 +477,6 @@ export const resetPassword= async(req, res, next) => {
             });
         }
 
-        // Verify token
         let decoded;
         try {
             decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -588,20 +564,14 @@ export const verifyEmail = async (req, res, next) => {
 
 export const deleteUserAccount = async(req,res,next)=>{
     try{
-        const {isValid,message } = decodeToken(req);
-        if(!isValid){
+        if(!req.isAuthenticated){
             return res.status(401).json({
                 status: "error",
-                message: "Invalid or missing token"
+                message: "User Not Authenticated"
             });
         }
-        const userId= message.id;
-        if(!isValid){
-            return res.status(401).json({
-                status: "error",
-                message: "Invalid or missing token"
-            });
-        }
+        const userId= req.decoded.id;
+
         const {password}= req.body;
 
         if(!password){

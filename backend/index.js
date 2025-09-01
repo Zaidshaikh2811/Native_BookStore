@@ -1,8 +1,9 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import authRoutes from "./routes/userRoute.js";
+import userRoutes from "./routes/userRoute.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import bookRoute from "./routes/bookRoute.js";
 import {connectDB} from "./lib/db.js";
 
 
@@ -36,8 +37,9 @@ app.get("/", (req, res) => {
 });
 
 
-app.use("/api/v1/user",authRoutes)
+app.use("/api/v1/user",userRoutes)
 app.use("/api/v1/admin",adminRoutes)
+app.use("/api/v1/books",bookRoute)
 
 
 
@@ -64,5 +66,7 @@ app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
     console.log(`Test the server: http://localhost:${port}`);
     console.log(`Auth routes available at: http://localhost:${port}/api/v1/auth`);
-    connectDB();
+    connectDB().then(async () => {
+        console.log("Connected");
+    });
 });
