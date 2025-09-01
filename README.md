@@ -18,7 +18,6 @@ A cross-platform mobile bookstore app built with **React Native (Expo)**, comple
 - [Project Structure](#project-structure)  
 - [Usage](#usage)  
 - [Contributing](#contributing)  
-- [License](#license)  
 - [Contact](#contact)
 
 ---
@@ -183,7 +182,7 @@ Contributions are welcome! To submit your improvements:
 ## Contact
 
 **Zaid Shaikh**
-Email: [zaidshaikh2811l@example.com](mailto:your.email@example.com)
+Email: [zaidshaikh2811l@example.com](mailto:your.email@gmail.com)
 Repo: [Native\_BookStore on GitHub](https://github.com/Zaidshaikh2811/Native_BookStore)
 
 ---
