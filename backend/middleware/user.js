@@ -44,6 +44,9 @@ const validatePassword = (password) => {
 export const userLogin = async (req, res, next) => {
     try {
         const { email, password } = req.body;
+        console.log("email", email);
+        console.log("password", password);
+
 
         if (!email || !password) {
             return res.status(400).json({
