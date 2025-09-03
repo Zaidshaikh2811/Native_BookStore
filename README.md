@@ -1,199 +1,172 @@
+# Native\_BookStore
 
-# Native BookStore
-
-A cross-platform mobile bookstore app built with **React Native (Expo)**, complete with a supporting backend to manage book listings, user accounts, and more.
-
----
-
-## Table of Contents
-
-- [Features](#features)  
-- [Tech Stack](#tech-stack)  
-- [Preview](#preview)  
-- [Getting Started](#getting-started)  
-  - [Prerequisites](#prerequisites)  
-  - [Installation](#installation)  
-  - [Configuration](#configuration)  
-  - [Running the App](#running-the-app)  
-- [Project Structure](#project-structure)  
-- [Usage](#usage)  
-- [Contributing](#contributing)  
-- [Contact](#contact)
+A cross-platform mobile bookstore app built with React Native (Expo), complete with a supporting backend to manage book listings, user accounts, and more.
 
 ---
 
-## Features
+## 📚 Features
 
-- User registration and login (e.g., with email/password, social auth)  
-- Browse book catalog with categories and filters  
-- View book details (title, author, description, cover, price)  
-- Add books to wishlist or cart  
-- Place orders (if applicable) or save favorites  
-- User profile and order history  
-- Push notifications or alerts (optional)  
-- Responsive and intuitive navigation with bottom tabs or drawer
+* **User Authentication**: Sign up, login, and manage user sessions.
+* **Book Catalog**: Browse books by categories, search, and apply filters.
+* **Book Details**: View detailed information about each book, including title, author, description, cover image, and price.
+* **Wishlist & Cart**: Add books to wishlist or shopping cart for future purchase.
+* **Order Management**: Place orders and view order history.
+* **User Profile**: Manage personal information and view past orders.
+---
+
+## ⚙️ Tech Stack
+
+* **Frontend**: React Native (Expo)
+* **Backend**: Node.js with Express.js
+* **Database**: MongoDB
+* **Authentication**: JWT (JSON Web Tokens)
+* **State Management**: Zustand
+* **UI Components**: React Navigation, React Nativewind ,LinearGradient
 
 ---
 
-## Tech Stack
+## 🖼️ Preview
 
-| Layer           | Technology                     |
-|----------------|--------------------------------|
-| Frontend       | React Native with Expo         |
-| Backend        | Node.js/Express |
-| State Management | React Context / Redux / Recoil |
-| Styling         | Tailwind CSS (React Native) or Styled Components |
-| Language        | JavaScript (TypeScript optional) |
+![WhatsApp Image 2025-09-03 at 18 49 26_3871f38d](https://github.com/user-attachments/assets/ae03d647-cabd-4541-b673-f18a60f319f0)
+
+![WhatsApp Image 2025-09-03 at 18 49 26_119adc46](https://github.com/user-attachments/assets/67a9cd2d-aee0-4331-ac0d-27ce44d7a6aa)
 
 ---
 
-## Preview
-
-> **Note:** Add real screenshots or animated GIFs here to showcase your app’s design and user flow.
-
-```markdown
-![Home Screen](assets/screenshots/home.png)
-![Book Detail Screen](assets/screenshots/book-detail.png)
-````
-
----
-
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
-* **Node.js** (v14+ recommended)
-* **npm** or **Yarn**
-* **Expo CLI** installed globally:
-
-  ```bash
-  npm install -g expo-cli
-  ```
+* Node.js (v14 or higher)
+* Expo CLI (`npm install -g expo-cli`)
+* MongoDB Atlas account (for cloud database) or local MongoDB setup
 
 ### Installation
 
-1. Clone the repo:
+1. Clone the repository:([GitHub][5])
 
    ```bash
    git clone https://github.com/Zaidshaikh2811/Native_BookStore.git
    cd Native_BookStore
    ```
 
-2. Install dependencies for both backend and mobile:
+
+
+2. Install frontend dependencies:
 
    ```bash
-   cd backend
-   npm install
-   cd ../mobile
+   cd mobile
    npm install
    ```
+
+
+
+3. Install backend dependencies:
+
+   ```bash
+   cd ../backend
+   npm install
+   ```
+
+
 
 ### Configuration
 
-Create a `.env` file in the `backend/` directory and configure your environment variables (e.g., API keys, database URLs):
+1. Create a `.env` file in the `backend` directory and add the following:
 
-```dotenv
-DB_URL=your_database_url
-API_SECRET_KEY=your_secret
-# Add any other needed variables
-```
+   ```
+    MONGO_URI=your_mongodb_connection_string
+    JWT_SECRET=your_jwt_secret_key
+    PORT=5000
+    NODE_ENV=development
+    JWT_REFRESH_SECRET=your_jwt_refresh_secret
+    JWT_EXPIRES_IN=your_jwt_expiration_time
+    CLOUDINARY_CLOUD_NAME=your_cloudinary_name
+    CLOUDINARY_API_KEY=your_cloudinary_api_key
+    CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+    API_URL=your_backend_url
+    EMAIL_USER=your_email
+    EMAIL_PASS=your_email_password
+    EMAIL_HOST=your_email_host
+    EMAIL_PORT=your_email_port
 
-If using Firebase or Appwrite, include relevant configuration fields here.
+   ```
+
+
+
+*Replace `your_mongodb_connection_string` with your MongoDB URI and `your_jwt_secret_key` with a secret key for JWT.*
+
+2. (Optional) Set up Firebase or another service for social authentication if implemented.
 
 ### Running the App
 
-1. **Start the backend** server:
+1. Start the backend server:([GitHub][2])
 
    ```bash
    cd backend
-   npm run start
+   npm start
    ```
 
-2. **Start the mobile app**:
+
+
+2. Start the frontend app:
 
    ```bash
    cd mobile
    expo start
    ```
 
-   Then open it in your iOS/Android simulator or scan the QR code using Expo Go.
+
+
+*Scan the QR code with the Expo Go app on your mobile device to run the app.*
 
 ---
 
-## Project Structure
+## 🗂️ Project Structure
 
 ```
 Native_BookStore/
-├── backend/             # Backend server logic, APIs, auth, database models
-│   ├── src/
-│   ├── .env
-│   ├── package.json
-│   └── README.md (optional)
-├── mobile/              # React Native app powered by Expo
-│   ├── assets/
-│   ├── components/
-│   ├── screens/
-│   ├── navigation/
-│   ├── App.js
-│   └── package.json
-└── README.md            # This README
+├── backend/                 # Backend server (Node.js + Express)
+│   ├── models/              # Mongoose models
+│   ├── routes/              # API routes
+│   ├── controllers/         # Route handlers
+│   ├── middleware/          # Middleware functions
+│   └── server.js            # Entry point
+└── mobile/                  # Frontend app (React Native)
+    ├── assets/              # Images and fonts
+    ├── components/          # Reusable components
+    ├── navigation/          # React Navigation setup
+    ├── screens/             # App screens
+    └── App.js               # Entry point
 ```
 
----
 
-## Usage
-
-* Launch the mobile app via Expo, sign in or register
-* Browse or search through the book catalog
-* Tap on any book to view details
-* Add books to wishlist or proceed to checkout/order
-* View past orders and manage your profile
-
-*(Adapt this section to match actual flows in your app.)*
 
 ---
 
-## Contributing
+## 🧪 Usage
 
-Contributions are welcome! To submit your improvements:
-
-1. Fork the repository
-2. Create a new branch:
-
-   ```bash
-   git checkout -b feature/YourFeature
-   ```
-3. Commit your changes:
-
-   ```bash
-   git commit -m "Add feature"
-   ```
-4. Push to your branch:
-
-   ```bash
-   git push origin feature/YourFeature
-   ```
-5. Submit a pull request for review.
+* **Authentication**: Users can register and log in using their email and password.
+* **Browsing**: Navigate through categories and apply filters to find books.
+* **Wishlist & Cart**: Add books to your wishlist or cart for future purchase.
+* **Orders**: Place orders and view order history in your profile.
 
 ---
 
+## 🤝 Contributing
 
-
-## Contact
-
-**Zaid Shaikh**
-Email: [zaidshaikh2811l@example.com](mailto:your.email@gmail.com)
-Repo: [Native\_BookStore on GitHub](https://github.com/Zaidshaikh2811/Native_BookStore)
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature-name`).
+3. Make your changes.
+4. Commit your changes (`git commit -am 'Add new feature'`).
+5. Push to the branch (`git push origin feature-name`).
+6. Create a new Pull Request.
 
 ---
 
-### Why This Works
+## 📞 Contact
 
-* Organized for quick onboarding of new developers
-* Easy-to-follow setup and commands
-* Encourages contributions and clearly outlines functionality
-* Provides a professional, polished look for your GitHub presence
+* **GitHub**: [@Zaidshaikh2811](https://github.com/Zaidshaikh2811)
+* **Email**: [zaidshaikh2811@gmail.com](mailto:zaidshaikh2811@gmail.com)
 
-If you share some details about your tech choices (e.g. whether you're using Firebase, how authentication works, or key features you’d like highlighted), I can tailor this further!
-
-[1]: https://github.com/Zaidshaikh2811/Native_BookStore "GitHub - Zaidshaikh2811/Native_BookStore"
+---
