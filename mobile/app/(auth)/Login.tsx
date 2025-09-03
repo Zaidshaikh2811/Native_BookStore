@@ -69,8 +69,10 @@ const LoginScreen: React.FC<LoginProps> = ({ onNavigateToSignup, onLogin }) => {
                 password,
             });
 
+            console.log(resp.data.data)
 
             const { user, accessToken, refreshToken } = resp.data.data;
+            console.log("Refresh Token "+refreshToken);
 
 
             useAuthStore.getState().setAuth({ user, accessToken, refreshToken });

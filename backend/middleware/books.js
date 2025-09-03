@@ -15,7 +15,7 @@ const decodeToken=(req)=>{
         }
         const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
-
+        console.log(token)
         if (!token) {
             return {
 
@@ -24,6 +24,7 @@ const decodeToken=(req)=>{
 
             }
         }
+
 
         const decoded= jsonwebtoken.verify(token, process.env.JWT_SECRET);
         if (!decoded.userId) {
@@ -237,15 +238,13 @@ export const deleteBook = async (req, res,next) => {
 
 export const getUserBooks = async (req, res, next) => {
     try {
-        const tokenResult = decodeToken(req);
-        if (!tokenResult.isValid) {
+        if(!req.isAuthenticated){
             return res.status(401).json({
-                error: "Authentication failed",
-                message: tokenResult.message
+                status: "error",
+                message: "User Not Authenticated"
             });
         }
-
-        const userId = tokenResult.decoded.id;
+        const userId= req.decoded.id;
         const { page = 1, limit = 10 } = req.query;
 
         const books = await Book.find({ userId })
@@ -273,3 +272,40 @@ export const getUserBooks = async (req, res, next) => {
         next(err);
     }
 };
+
+export const getBooks =async (req, res, next) => {
+    try{
+        console.log("getBooks")
+        if(!req.isAuthenticated){
+            return res.status(401).json({
+                status: "error",
+                message: "User Not Authenticated"
+            });
+        }
+        const userId= req.decoded.id;
+        const { page = 1, limit = 10 } = req.query;
+
+        const books = await Book.find()
+            .sort({ createdAt: -1 })
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
+            .select('title description imageUrl createdAt updatedAt');
+
+        const total = await Book.countDocuments({ userId });
+
+        return res.status(200).json({
+            success: true,
+            books,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(total / limit),
+                totalBooks: total,
+                hasNext: page * limit < total,
+                hasPrev: page > 1
+            }
+        });
+    }
+    catch(error){
+        next(error);
+    }
+}

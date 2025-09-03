@@ -20,7 +20,7 @@ router.post("/signup", userSignup)
 
 router.put("/update", userRoute,updateUserProfile)
 router.post("/change-password", userRoute, changePassword)
-router.post("/refresh-token",  userRoute,refreshToken)
+router.post("/refresh-token",   refreshToken)
 router.post("/forgot-password", userRoute, forgotPassword)
 router.post("/reset-password", userRoute, resetPassword)
 router.get("/verify-email", userRoute, verifyEmail)

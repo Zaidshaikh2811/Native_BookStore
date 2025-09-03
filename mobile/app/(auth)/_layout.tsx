@@ -10,12 +10,9 @@ export default function RootLayout() {
 
 
     return  (   <Stack screenOptions={{ headerShown: false }}>
-        {isAuthenticated ? (
-            <>
-                <Stack.Screen name="(app)" />
-            </>
-        ) : (
-            <>
+
+                <Stack.Screen name="(app)" options={{  headerShown: false}} />
+
             <Stack.Screen name="Login"  options={{
                 title: "Login",
                 headerShown: false,
@@ -26,8 +23,7 @@ export default function RootLayout() {
                 headerShown: false,
                 animation: "slide_from_right",
             }} />
-            </>
-        )}
+
         </Stack>
     )
 }

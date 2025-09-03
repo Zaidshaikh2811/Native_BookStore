@@ -10,9 +10,8 @@ const generateTokens = (user) => {
         email: user.email,
         role: user.role || "user"
     };
-
     const accessToken = jsonwebtoken.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-    const refreshToken = jsonwebtoken.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+     const refreshToken = jsonwebtoken.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
 
     return { accessToken, refreshToken };
 
@@ -376,6 +375,7 @@ export const changePassword=async(req, res, next) => {
 
 export const refreshToken = async (req, res, next) => {
     try {
+        console.log("refreshToken")
         const refreshToken = req.body.refreshToken;
         if (!refreshToken) {
             return res.status(400).json({

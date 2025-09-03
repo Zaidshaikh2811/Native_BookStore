@@ -3,7 +3,9 @@ import jsonwebtoken from "jsonwebtoken";
 
 const decodeAndValidateToken = async (req) => {
     try {
+        console.log( req.headers)
         const authHeader = req.headers.authorization;
+        console.log("authHeader", authHeader);
 
 
         if (!authHeader) {
@@ -13,6 +15,7 @@ const decodeAndValidateToken = async (req) => {
                 statusCode: 401
             };
         }
+        console.log("authHeader.startsWith('Bearer '): "+authHeader.startsWith('Bearer '))
 
         if (!authHeader.startsWith('Bearer ')) {
             return {
@@ -75,6 +78,7 @@ const decodeAndValidateToken = async (req) => {
                 statusCode: 401
             };
         }
+        console.log("Refresh TOken Sended")
 
         return {
             isValid: true,
@@ -185,6 +189,7 @@ export const userRoute = async (req, res, next) => {
     try {
         console.log("Authenticating user route access...");
         const tokenResult = await decodeAndValidateToken(req);
+        console.log(tokenResult)
 
         if (!tokenResult.isValid) {
             return res.status(tokenResult.statusCode).json({
@@ -193,7 +198,7 @@ export const userRoute = async (req, res, next) => {
                 message: "User authentication required"
             });
         }
-
+        console.log("tokenResult.isValid")
         const user = tokenResult.user;
 
         // Check if user account is active
@@ -219,7 +224,7 @@ export const userRoute = async (req, res, next) => {
         req.user = user;
         req.decoded = tokenResult.decoded;
         req.isAuthenticated = true;
-
+        console.log("TOken VAlided")
         // Update user's last activity
         try {
             await User.findByIdAndUpdate(

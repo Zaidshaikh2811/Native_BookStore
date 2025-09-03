@@ -1,41 +1,48 @@
-import { View, Text, Button, StyleSheet } from "react-native";
+import { View, Text, Button } from "react-native";
 
 import { useRouter } from "expo-router";
 import {useAuthStore} from "@/store/authStore";
+import api from "@/lib/api";
+import {useEffect} from "react";
 
 export default function Home() {
-    const { user, clearAuth } = useAuthStore();
+    const { user, clearAuth ,isAuthenticated } = useAuthStore();
     const router = useRouter();
+
+    useEffect(() => {
+        if(!isAuthenticated){
+            router.replace("/(auth)/Login");
+        }
+    }, [isAuthenticated, router]);
 
     const handleLogout = () => {
         clearAuth();
-        router.replace("/(auth)/Login"); // redirect to login
+        router.replace("/(auth)/Login");
     };
 
+    const fetchBooks = async () => {
+        try{
+
+
+            const response = await api.get("/books");
+            console.log(response);
+
+        }catch(e){
+            console.log(e)
+
+        }
+    }
+
+
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Welcome, {user?.name || "Guest"}!</Text>
-            <Text style={styles.subtitle}>Your email: {user?.email}</Text>
+        <View  >
+            <Text  >Welcome, {user?.name || "Guest"}!</Text>
+            <Text >Your email: {user?.email}</Text>
 
             <Button title="Logout" onPress={handleLogout} />
+            <Button title="fetchBooks" onPress={fetchBooks} />
         </View>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 20,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: "bold",
-        marginBottom: 10,
-    },
-    subtitle: {
-        fontSize: 16,
-        marginBottom: 20,
-    },
-});
+

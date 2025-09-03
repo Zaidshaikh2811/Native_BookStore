@@ -5,13 +5,14 @@ import userRoutes from "./routes/userRoute.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import bookRoute from "./routes/bookRoute.js";
 import {connectDB} from "./lib/db.js";
+import job from "./lib/cron.js";
 
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
-
+job.start();
 
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
@@ -62,10 +63,7 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => {
-
-    console.log(`Server is running on port ${port}`);
-    console.log(`Test the server: http://localhost:${port}`);
-    console.log(`Auth routes available at: http://localhost:${port}/api/v1/auth`);
+    console.log(`Server is running on port ${process.env.API_URL}`);
     connectDB().then(async () => {
         console.log("Connected");
     });
