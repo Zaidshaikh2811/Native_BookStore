@@ -43,8 +43,7 @@ const validatePassword = (password) => {
 export const userLogin = async (req, res, next) => {
     try {
         const { email, password } = req.body;
-        console.log("email", email);
-        console.log("password", password);
+
 
 
         if (!email || !password) {
@@ -102,7 +101,8 @@ export const userLogin = async (req, res, next) => {
                     name: user.name,
                     role: user.role,
                     profilePicture: user.profilePicture,
-                    lastLogin: user.lastLogin
+                    lastLogin: user.lastLogin,
+                    createdAt: user.createdAt,
                 },
                 accessToken,
                 refreshToken

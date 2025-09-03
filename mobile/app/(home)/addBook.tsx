@@ -136,11 +136,11 @@ const AddBook = () => {
                 contentContainerStyle={{ flexGrow: 1 }}
             >
                 {/* Header */}
-                <View className="pt-12 px-5 pb-8 bg-brand-gradient rounded-b-3xl">
-                    <Text className="text-3xl font-serif text-brand-600 text-center mb-2">
+                <View className="pt-12 px-5 pb-8 bg-brand-gradient rounded-b-3xl font-semibold">
+                    <Text className="text-3xl   text-brand-600 text-center mb-2">
                         Add New Book
                     </Text>
-                    <Text className="text-base font-body text-brand-400 text-center opacity-90">
+                    <Text className="text-base   text-brand-400 text-center opacity-90 font-semibold">
                         Share your latest read with the community
                     </Text>
                 </View>

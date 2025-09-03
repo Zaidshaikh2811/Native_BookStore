@@ -134,8 +134,14 @@ const SignupScreen: React.FC<SignupProps> = ({ onNavigateToLogin, onSignup }) =>
 
             router.replace("/(home)/home");
 
-        } catch (error) {
-            Alert.alert('Error', 'Signup failed. Please try again.');
+        } catch (error: any) {
+            const backendMessage =
+                error?.response?.data?.error || error?.error || "Something went wrong";
+            Toast.show({
+                type: "error",
+                text1: "SingUp Failed ❌",
+                text2:backendMessage || (error as any).message || 'An error occurred during login',
+            })
         } finally {
             setIsLoading(false);
         }

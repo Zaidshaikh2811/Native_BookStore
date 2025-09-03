@@ -72,7 +72,7 @@ const LoginScreen: React.FC<LoginProps> = ({ onNavigateToSignup, onLogin }) => {
                 email,
                 password,
             });
-            console.log(resp.data);
+
 
             if (resp.status !== 200) {
                 Toast.show({
@@ -99,12 +99,14 @@ const LoginScreen: React.FC<LoginProps> = ({ onNavigateToSignup, onLogin }) => {
 
             router.replace("/(home)/home");
 
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
+            const backendMessage =
+                error?.response?.data?.error || error?.error || "Something went wrong";
             Toast.show({
                 type: "error",
                 text1: "Login Failed ❌",
-                text2: (error as any).message || 'An error occurred during login',
+                text2:backendMessage || (error as any).message || 'An error occurred during login',
             })
         } finally {
             setIsLoading(false);

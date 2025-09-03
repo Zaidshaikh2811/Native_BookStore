@@ -186,9 +186,9 @@ export const protectAdmin = async (req, res, next) => {
 
 export const userRoute = async (req, res, next) => {
     try {
-        console.log("Authenticating user route access...");
+
         const tokenResult = await decodeAndValidateToken(req);
-        console.log(tokenResult)
+
 
         if (!tokenResult.isValid) {
             return res.status(tokenResult.statusCode).json({
@@ -197,7 +197,7 @@ export const userRoute = async (req, res, next) => {
                 message: "User authentication required"
             });
         }
-        console.log("tokenResult.isValid")
+
         const user = tokenResult.user;
 
         // Check if user account is active
@@ -223,7 +223,7 @@ export const userRoute = async (req, res, next) => {
         req.user = user;
         req.decoded = tokenResult.decoded;
         req.isAuthenticated = true;
-        console.log("TOken VAlided")
+
         // Update user's last activity
         try {
             await User.findByIdAndUpdate(

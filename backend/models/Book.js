@@ -25,6 +25,9 @@ const bookSchema = new mongoose.Schema({
         ref: "User",
       required:true
     },
+    imagePublicId: {
+        type: String, // Store Cloudinary public_id for deletion
+    },
 
 },{
     timestamps: true

@@ -1,61 +1,9 @@
 import cloudinary from "../lib/clodinary.js";
 import Book from "../models/Book.js";
-import jsonwebtoken from "jsonwebtoken";
 
 
-const decodeToken=(req)=>{
-    try{
-        const authHeader = req.headers.authorization;
-
-        if(!authHeader){
-            return {
-                isValid: false,
-                message: "Authorization header missing"
-            }
-        }
-        const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
-        console.log(token)
-        if (!token) {
-            return {
-
-                isValid: false,
-                message: "  No token provided"
-
-            }
-        }
 
 
-        const decoded= jsonwebtoken.verify(token, process.env.JWT_SECRET);
-        if (!decoded.userId) {
-            return {
-                isValid: false,
-                message: "Invalid token: missing user ID"
-            };
-        }
-
-        return {isValid: true , message: "valid Token", decoded};
-    }catch(error){
-        console.error("Token verification error:", error.message);
-
-        if (error.name === 'TokenExpiredError') {
-            return {
-                isValid: false,
-                message: "Token has expired"
-            };
-        } else if (error.name === 'JsonWebTokenError') {
-            return {
-                isValid: false,
-                message: "Invalid token format"
-            };
-        }
-
-        return {
-            isValid: false,
-            message: "Token verification failed"
-        };
-    }
-}
 
 const validateBookInput = (title, description, image) => {
     const errors = [];
@@ -140,6 +88,7 @@ export const addBook = async (req, res,next) => {
 
 
         let imageUrl;
+        let imagePublicId;
         try {
             const uploadResponse = await cloudinary.uploader.upload(`data:image/jpeg;base64,${image}`, {
                 folder: "books",
@@ -150,7 +99,7 @@ export const addBook = async (req, res,next) => {
             });
 
             imageUrl = uploadResponse.secure_url || uploadResponse.url;
-
+             imagePublicId = uploadResponse.public_id;
             if (!imageUrl) {
                 throw new Error("Failed to get image URL from upload response");
             }
@@ -163,12 +112,23 @@ export const addBook = async (req, res,next) => {
             });
         }
         console.log("Image uploaded successfully:", imageUrl);
+        console.log({
+            title: title.trim(),
+            description: description.trim(),
+            image: imageUrl,
+            rating:rating,
+            user: userId,
+            imagePublicId:imagePublicId,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        })
         const newBook = new Book({
             title: title.trim(),
             description: description.trim(),
             image: imageUrl,
             rating:rating,
             user: userId,
+            imagePublicId:imagePublicId,
             createdAt: new Date(),
             updatedAt: new Date()
         });
@@ -197,20 +157,28 @@ export const addBook = async (req, res,next) => {
 export const deleteBook = async (req, res,next) => {
     try{
 
-        const { isValid,message,decoded } = decodeToken(req);
+        if(!req.isAuthenticated){
+            return res.status(401).json({
+                status: "error",
+                message: "User Not Authenticated"
+            });
+        }
+        const userId= req.decoded.id;
         const { bookId } = req.params;
 
-        if(!isValid){
-            return res.status(400).send({error:"Please enter a title or description"})
-        }
+
+
         if(!bookId){
             return res.status(400).send({error:"Please enter a book id"})
         }
+        console.log("bookId:",bookId)
+        console.log("userId:",userId)
 
         const book=await Book.findOne({
             _id: bookId,
-            userId: decoded.id
+            user: userId
         })
+        console.log(book)
         if (!book) {
             return res.status(404).json({
                 error: "Book not found or unauthorized"
@@ -218,16 +186,15 @@ export const deleteBook = async (req, res,next) => {
         }
 
 
-        if (book.imageUrl) {
+        if (book.imagePublicId) {
             try {
-                // Extract public_id from Cloudinary URL
-                const publicId = book.imageUrl.split('/').pop().split('.')[0];
-                await clodinary.destroy(publicId);
+                await cloudinary.uploader.destroy(book.imagePublicId);
             } catch (cloudinaryError) {
                 console.error("Failed to delete image from Cloudinary:", cloudinaryError);
 
             }
         }
+
 
         // Delete book from database
         await Book.findByIdAndDelete(bookId);
@@ -253,15 +220,16 @@ export const getUserBooks = async (req, res, next) => {
             });
         }
         const userId= req.decoded.id;
+        console.log("userId",userId)
         const { page = 1, limit = 10 } = req.query;
 
-        const books = await Book.find({ userId })
+        const books = await Book.find({ user:userId })
             .sort({ createdAt: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit)
-            .select('title description imageUrl createdAt updatedAt');
+            .select('title description image rating  createdAt updatedAt');
 
-        const total = await Book.countDocuments({ userId });
+        const total = await Book.countDocuments({ user:userId });
 
         return res.status(200).json({
             success: true,
@@ -293,11 +261,12 @@ export const getBooks =async (req, res, next) => {
         const userId= req.decoded.id;
         const { page = 1, limit = 10 } = req.query;
 
-        const books = await Book.find()
-            .sort({ createdAt: -1 })
+        const books = await Book.find() .sort({ createdAt: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit)
-            .select('title description imageUrl createdAt updatedAt');
+            .select('title description image rating user createdAt updatedAt')
+            .populate('user', 'name email');
+        console.log(books)
 
         const total = await Book.countDocuments({ userId });
 
@@ -317,3 +286,62 @@ export const getBooks =async (req, res, next) => {
         next(error);
     }
 }
+
+export const updateBooks = async (req, res, next) => {
+    try {
+        const { id } = req.params; // Book ID from URL
+        const { title, description, rating, image } = req.body;
+        const userId = req.user._id; // Logged-in user (from auth middleware)
+
+        if(userId){
+            return res.status(404).json({ success: false, message: "Please Login again" });
+        }
+
+        // Find the book
+        const book = await Book.findById(id);
+        if (!book) {
+            return res.status(404).json({ success: false, message: "Book not found" });
+        }
+
+        // Check if the user owns the book
+        if (book.user.toString() !== userId.toString()) {
+            return res.status(403).json({ success: false, message: "Not authorized" });
+        }
+
+        // If a new image is provided, upload to Cloudinary
+        if (image) {
+
+            if (book.imagePublicId) {
+                await cloudinary.uploader.destroy(book.imagePublicId);
+            }
+
+            // Upload new image
+            const uploadResponse = await cloudinary.uploader.upload(image, {
+                folder: "books",
+                transformation: [
+                    { width: 800, height: 600, crop: "limit" },
+                    { quality: "auto" },
+                ],
+            });
+
+            book.image = uploadResponse.secure_url;
+            book.imagePublicId = uploadResponse.public_id; // Save public_id for future deletions
+        }
+
+        // Update other fields if provided
+        if (title) book.title = title;
+        if (description) book.description = description;
+        if (rating) book.rating = rating;
+
+        // Save the updated book
+        await book.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Book updated successfully",
+            book,
+        });
+    } catch (err) {
+        next(err);
+    }
+};

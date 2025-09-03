@@ -12,7 +12,7 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         const { accessToken ,refreshToken} = useAuthStore.getState();
-        console.log("first refreshToken "+refreshToken)
+
 
         if (accessToken) {
             config.headers.Authorization = `Bearer ${accessToken}`;
@@ -29,15 +29,14 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        console.log(error.response?.status)
-        console.log(originalRequest._retry)
+
         // If token expired
         if (error.response?.status === 401  && !originalRequest._retry ) {
             originalRequest._retry = true;
 
             try {
                 const { refreshToken } = useAuthStore.getState();
-                console.log("SEcond refreshToken "+refreshToken)
+
                 if (!refreshToken) throw new Error('No refresh token available');
 
 
@@ -46,8 +45,7 @@ api.interceptors.response.use(
                     `${process.env.EXPO_PUBLIC_API_URL}/user/refresh-token`,
                     { refreshToken }
                 );
-                console.log("refresh token resp: " , resp.data.data.accessToken);
-                console.log(resp.data?.data?.accessToken)
+
 
                 const newAccessToken = resp.data?.data?.accessToken;
 
