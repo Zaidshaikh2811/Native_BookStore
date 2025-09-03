@@ -201,10 +201,7 @@ export const userSignup = async (req, res, next) => {
 
 export const getUserProfile =async (req, res, next) => {
     try{
-        console.log("user from req "+req.user);
-        console.log("decoded from req "+req.decoded.id);
-        console.log("admin from req "+req.isAdmin);
-        console.log("isAuthenticated from req "+req.isAuthenticated);
+
         if(!req.isAuthenticated){
             return res.status(401).json({
                 status: "error",

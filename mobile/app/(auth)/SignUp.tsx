@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     View,
     Text,
@@ -11,10 +11,11 @@ import {
     Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import {Link} from "expo-router";
+import {Link,useRouter} from "expo-router";
 import {useAuthStore} from "@/store/authStore";
 
 import api from "@/lib/api"
+import Toast from "react-native-toast-message";
 
 
 interface SignupProps {
@@ -23,7 +24,8 @@ interface SignupProps {
 }
 
 const SignupScreen: React.FC<SignupProps> = ({ onNavigateToLogin, onSignup }) => {
-   const {user}=useAuthStore()
+   const {user ,isAuthenticated}=useAuthStore()
+    const router=useRouter();
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -123,12 +125,28 @@ const SignupScreen: React.FC<SignupProps> = ({ onNavigateToLogin, onSignup }) =>
             const { user, accessToken, refreshToken } = resp.data.data;
 
             useAuthStore.getState().setAuth({ user, accessToken, refreshToken });
+
+            Toast.show({
+                type: "success",
+                text1: "Signed Up Successfully 🎉",
+                text2: `Welcome aboard, ${user.name}!`,
+            });
+
+            router.replace("/(home)/home");
+
         } catch (error) {
             Alert.alert('Error', 'Signup failed. Please try again.');
         } finally {
             setIsLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            router.replace("/(home)/home");
+        }
+
+    }, [isAuthenticated,router]);
 
     return (
         <SafeAreaView className="flex-1 bg-paper">

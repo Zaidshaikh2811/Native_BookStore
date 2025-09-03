@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     View,
     Text,
@@ -11,9 +11,10 @@ import {
     Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import {Link} from "expo-router";
+import {Link, useRouter} from "expo-router";
 import {useAuthStore} from "@/store/authStore";
 import api from "@/lib/api"
+import Toast from "react-native-toast-message";
 
 interface LoginProps {
     onNavigateToSignup: () => void;
@@ -21,11 +22,13 @@ interface LoginProps {
 }
 
 const LoginScreen: React.FC<LoginProps> = ({ onNavigateToSignup, onLogin }) => {
+    const {isAuthenticated} = useAuthStore();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState({ email: '', password: '' });
+    const router=useRouter();
 
     const validateEmail = (email: string): boolean => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -33,7 +36,7 @@ const LoginScreen: React.FC<LoginProps> = ({ onNavigateToSignup, onLogin }) => {
     };
 
     const handleLogin = async () => {
-        // Reset errors
+
         setErrors({ email: '', password: '' });
 
         // Validation
@@ -64,26 +67,57 @@ const LoginScreen: React.FC<LoginProps> = ({ onNavigateToSignup, onLogin }) => {
         setIsLoading(true);
 
         try {
+            console.log("Logging in")
             const resp = await api.post('/user/login', {
                 email,
                 password,
             });
+            console.log(resp.data);
 
-            console.log(resp.data.data)
+            if (resp.status !== 200) {
+                Toast.show({
+                    type: "error",
+                    text1: "Login Failed ❌",
+                    text2: resp.data.message || 'Login failed',
+                })
+                throw new Error(resp.data.message || 'Login failed');
+            }
+
+
 
             const { user, accessToken, refreshToken } = resp.data.data;
-            console.log("Refresh Token "+refreshToken);
+
 
 
             useAuthStore.getState().setAuth({ user, accessToken, refreshToken });
 
+            Toast.show({
+                type: "success",
+                text1: "Login Successful ✅",
+                text2: `Welcome back, ${user.name}!`,
+            });
+
+            router.replace("/(home)/home");
+
         } catch (error) {
             console.log(error);
-            Alert.alert('Error', 'Login failed. Please try again.');
+            Toast.show({
+                type: "error",
+                text1: "Login Failed ❌",
+                text2: (error as any).message || 'An error occurred during login',
+            })
         } finally {
             setIsLoading(false);
         }
     };
+
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            router.replace("/(home)/home");
+        }
+
+    }, [isAuthenticated,router]);
 
     return (
         <SafeAreaView className="flex-1 bg-paper">

@@ -1,6 +1,9 @@
 import axios from 'axios';
 import { useAuthStore } from "@/store/authStore"
 
+console.log("API URL: ", process.env.EXPO_PUBLIC_API_URL);
+
+// Create Axios instance
 const api = axios.create({
     baseURL: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api/v1', // 👈 use env var
 });

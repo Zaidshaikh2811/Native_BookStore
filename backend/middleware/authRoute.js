@@ -78,7 +78,6 @@ const decodeAndValidateToken = async (req) => {
                 statusCode: 401
             };
         }
-        console.log("Refresh TOken Sended")
 
         return {
             isValid: true,

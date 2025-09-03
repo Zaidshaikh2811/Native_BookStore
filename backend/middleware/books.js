@@ -1,4 +1,4 @@
-import clodinary from "../lib/clodinary.js";
+import cloudinary from "../lib/clodinary.js";
 import Book from "../models/Book.js";
 import jsonwebtoken from "jsonwebtoken";
 
@@ -105,23 +105,30 @@ const checkDuplicateTitle=async(title,userId)=>{
 
 export const addBook = async (req, res,next) => {
     try{
-        const {title,description  ,image} = req.body
+
+        if(!req.isAuthenticated){
+            return res.status(401).json({
+                status: "error",
+                message: "User Not Authenticated"
+            });
+        }
+        const userId= req.decoded.id;
+        const {title,description ,rating ,image} = req.body
+        console.log("title, description, rating", title, description, rating)
+
+
 
 
         const validationErrors = validateBookInput(title, description, image);
         if (validationErrors.length > 0) {
             return res.status(400).json({
-                error: "Validation failed",
-                details: validationErrors
+                error: validationErrors
             });
         }
 
 
 
-        const {isValid,message,decoded}=decodeToken(req);
-        if(!isValid){
-            return res.status(400).send({error:"Please enter a title or description"})
-        }
+
 
 
         const isDuplicate = await checkDuplicateTitle(title.trim(), userId);
@@ -134,13 +141,12 @@ export const addBook = async (req, res,next) => {
 
         let imageUrl;
         try {
-            const uploadResponse = await clodinary.upload({
-                file: image,
+            const uploadResponse = await cloudinary.uploader.upload(`data:image/jpeg;base64,${image}`, {
                 folder: "books",
                 transformation: [
-                    { width: 800, height: 600, crop: "limit" }, // Optimize image size
-                    { quality: "auto" }
-                ]
+                    { width: 800, height: 600, crop: "limit" },
+                    { quality: "auto" },
+                ],
             });
 
             imageUrl = uploadResponse.secure_url || uploadResponse.url;
@@ -156,17 +162,19 @@ export const addBook = async (req, res,next) => {
                 message: "Please try again with a valid image"
             });
         }
-
+        console.log("Image uploaded successfully:", imageUrl);
         const newBook = new Book({
             title: title.trim(),
             description: description.trim(),
-            imageUrl: imageUrl,
-            userId: decoded.id,
+            image: imageUrl,
+            rating:rating,
+            user: userId,
             createdAt: new Date(),
             updatedAt: new Date()
         });
 
         const savedBook = await newBook.save();
+        console.log("Book saved successfully:", savedBook);
         return res.status(201).json({
             success: true,
             message: "Book added successfully",
