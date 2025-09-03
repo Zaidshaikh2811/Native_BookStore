@@ -1,7 +1,11 @@
 import {Stack} from "expo-router";
-import { NavigationContainer } from "@react-navigation/native";
+
 import Toast from "react-native-toast-message";
 import {SafeAreaView} from "react-native";
+
+
+
+
 
 export default function RootLayout() {
     return(
@@ -17,3 +21,4 @@ export default function RootLayout() {
 
     )
 }
+
