@@ -27,10 +27,16 @@ A cross-platform mobile bookstore app built with React Native (Expo), complete w
 
 ## 🖼️ Preview
 
-![WhatsApp Image 2025-09-03 at 18 49 26_3871f38d](https://github.com/user-attachments/assets/ae03d647-cabd-4541-b673-f18a60f319f0)
-
-![WhatsApp Image 2025-09-03 at 18 49 26_119adc46](https://github.com/user-attachments/assets/67a9cd2d-aee0-4331-ac0d-27ce44d7a6aa)
-
+<table>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/ae03d647-cabd-4541-b673-f18a60f319f0" width="300"/>
+    </td>
+    <td>
+      <img src="https://github.com/user-attachments/assets/67a9cd2d-aee0-4331-ac0d-27ce44d7a6aa" width="300"/>
+    </td>
+  </tr>
+</table>
 ---
 
 ## 🚀 Getting Started
