@@ -293,7 +293,7 @@ export const updateBooks = async (req, res, next) => {
         const { title, description, rating, image } = req.body;
         const userId = req.user._id; // Logged-in user (from auth middleware)
 
-        if(userId){
+        if(!userId){
             return res.status(404).json({ success: false, message: "Please Login again" });
         }
 
@@ -345,3 +345,40 @@ export const updateBooks = async (req, res, next) => {
         next(err);
     }
 };
+
+export const getIndBooks = async (req, res, next) => {
+    try{
+        if(!req.isAuthenticated){
+            return res.status(401).json({
+                status: "error",
+                message: "User Not Authenticated"
+            });
+        }
+        const userId= req.decoded.id;
+        const { bookId } = req.params;
+
+        if(!bookId){
+            return res.status(400).send({error:"Please enter a book id"})
+        }
+        console.log("bookId:",bookId)
+        console.log("userId:",userId)
+
+        const book=await Book.findOne({
+            _id: bookId,
+            user: userId
+        }).populate('user', 'name email')
+        console.log(book)
+        if (!book) {
+            return res.status(404).json({
+                error: "Book not found or unauthorized"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            book
+        });
+    }catch(err){
+        next(err)
+    }
+}

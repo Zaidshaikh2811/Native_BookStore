@@ -25,7 +25,7 @@ export default function Home() {
         } else {
             fetchBooks(1);
         }
-    }, [isAuthenticated, router]);
+    }, [fetchBooks, isAuthenticated, router]);
 
     const handleLogout = () => {
         clearAuth();
@@ -54,7 +54,7 @@ export default function Home() {
         } catch (e: any) {
             console.error("Error fetching books:", e.message || e);
             const backendMessage =
-                e?.response?.data?.error || e?.error || "Something went wrong";
+                e?.response?.data?.message || e?.message || "Something went wrong";
             Toast.show({
                 type: "error",
                 text1: "Fetch Failed ❌",

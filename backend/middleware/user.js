@@ -4,6 +4,7 @@ import jsonwebtoken from "jsonwebtoken";
 import validator from "validator";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
+import Book from "../models/Book.js";
 
 const generateTokens = (user) => {
     const payload = {
@@ -417,6 +418,8 @@ export const forgotPassword = async (req, res, next) => {
     try {
         const { email } = req.body;
 
+        console.log(email)
+
         if (!email || !validator.isEmail(email)) {
             return res.status(400).json({
                 status: "error",
@@ -612,3 +615,34 @@ export const deleteUserAccount = async(req,res,next)=>{
         next(error);
     }
 }
+
+export const getUserStats = async (req, res, next) => {
+    try {
+        const userId = req.user.id; // get logged-in user from middleware
+
+        // Total books by user
+        const totalBooks = await Book.countDocuments({ user: userId });
+
+        // Total reviews (assuming Book has reviews array)
+        const userBooks = await Book.find({ user: userId });
+        const totalReviews = userBooks.reduce((acc, book) => acc + (book.reviews?.length || 0), 0);
+
+        // Average rating across all user's books
+        const averageRating =
+            userBooks.reduce((acc, book) => acc + (book.rating || 0), 0) /
+            (userBooks.length || 1);
+
+        // Member since
+        const user = await User.findById(userId);
+        const memberSince = user?.createdAt;
+
+        res.status(200).json({
+            totalBooks,
+            totalReviews,
+            averageRating: Number(averageRating.toFixed(1)),
+            memberSince,
+        });
+    } catch (err) {
+        next(err);
+    }
+};

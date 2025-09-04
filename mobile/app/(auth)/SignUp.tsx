@@ -136,7 +136,7 @@ const SignupScreen: React.FC<SignupProps> = ({ onNavigateToLogin, onSignup }) =>
 
         } catch (error: any) {
             const backendMessage =
-                error?.response?.data?.error || error?.error || "Something went wrong";
+                error?.response?.data?.message || error?.message || "Something went wrong";
             Toast.show({
                 type: "error",
                 text1: "SingUp Failed ❌",

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
     View,
     Text,
@@ -7,73 +7,133 @@ import {
     Image,
     TouchableOpacity,
     Alert,
-    RefreshControl,
-    Dimensions
 } from "react-native";
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 import api from "@/lib/api";
 import Toast from "react-native-toast-message";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { useRouter } from "expo-router";
+import UpdateBookModal from "@/components/UpdateBookModal";
 
 dayjs.extend(relativeTime);
 
-const { width } = Dimensions.get('window');
+interface UserBooksProps {
+    refreshTrigger: number;
+    onStatsUpdate?: () => void;
+}
 
-export default function UserBooks({ reload }: { reload: boolean }) {
-    const [books, setBooks] = useState<any[]>([]);
+interface Book {
+    _id: string;
+    title: string;
+    description: string;
+    rating: number;
+    image?: string;
+    createdAt: string;
+}
+
+interface Pagination {
+    currentPage: number;
+    hasNext: boolean;
+    totalPages: number;
+    totalBooks: number;
+}
+
+export default function UserBooks({ refreshTrigger, onStatsUpdate }: UserBooksProps) {
+    const [books, setBooks] = useState<Book[]>([]);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [hasNext, setHasNext] = useState(true);
+    const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [updateBookid, setUpdateBookId] = useState<number | null>(null);
 
-    const router = useRouter();
+    // Fetch user books with proper error handling
+    const fetchUserBooks = useCallback(
+        async (page: number = 1, isRefresh: boolean = false) => {
+            // Prevent multiple simultaneous requests
+            if (isLoadingMore && !isRefresh) return;
+            if (!hasNext && page > 1) return;
 
-    const fetchUserBooks = async (page: number = 1, isRefresh: boolean = false) => {
-        if (loading || (!hasNext && !isRefresh)) return;
+            try {
+                if (isRefresh) {
+                    setRefreshing(true);
+                } else if (page === 1) {
+                    setLoading(true);
+                } else {
+                    setIsLoadingMore(true);
+                }
 
-        if (isRefresh) {
-            setRefreshing(true);
-        } else {
-            setLoading(true);
-        }
+                console.log("Fetching books, page:", page);
 
-        try {
-            const res = await api.get(`/books/my?page=${page}`);
-            const { books: newBooks, pagination } = res.data;
+                const response = await api.get(`/books/my?page=${page}`);
+                console.log(response.data)
+                const { books: newBooks, pagination }: { books: Book[], pagination: Pagination } = response.data;
 
-            setBooks((prev) => (page === 1 ? newBooks : [...prev, ...newBooks]));
-            setCurrentPage(pagination.currentPage);
-            setHasNext(pagination.hasNext);
+                setBooks((prevBooks) => {
+                    if (page === 1) {
+                        return newBooks;
+                    }
+                    // Avoid duplicates when loading more
+                    const existingIds = prevBooks.map(book => book._id);
+                    const filteredNewBooks = newBooks.filter(book => !existingIds.includes(book._id));
+                    return [...prevBooks, ...filteredNewBooks];
+                });
 
-        } catch (e: any) {
-            console.error(e);
-            const backendMessage =
-                e?.response?.data?.error || e?.error || "Something went wrong";
-            Toast.show({
-                type: "error",
-                text1: "Failed to fetch books",
-                text2: backendMessage || "Please try again later"
-            });
-        } finally {
-            setLoading(false);
-            setRefreshing(false);
-        }
-    };
+                setCurrentPage(pagination.currentPage);
+                setHasNext(pagination.hasNext);
 
+                // Update parent component stats if callback provided
+                if (onStatsUpdate && (page === 1 || isRefresh)) {
+                    onStatsUpdate();
+                }
+
+            } catch (error: any) {
+                console.error('Error fetching books:', error);
+                const backendMessage =
+                    error?.response?.data?.error ||
+                    error?.response?.data?.message ||
+                    error?.message ||
+                    "Something went wrong";
+
+                Toast.show({
+                    type: "error",
+                    text1: "Failed to fetch books",
+                    text2: backendMessage,
+                });
+            } finally {
+                setLoading(false);
+                setRefreshing(false);
+                setIsLoadingMore(false);
+            }
+        },
+        [hasNext, isLoadingMore, onStatsUpdate]
+    );
+
+    // Initial load effect
     useEffect(() => {
         fetchUserBooks(1, true);
-    }, [reload]);
+    }, [refreshTrigger]);
 
-    const handleRefresh = () => {
-        setCurrentPage(1);
-        setHasNext(true);
-        fetchUserBooks(1, true);
-    };
+    // Handle load more
+    const handleLoadMore = useCallback(() => {
+        if (hasNext && !isLoadingMore && !loading && !refreshing) {
+            fetchUserBooks(currentPage + 1);
+        }
+    }, [hasNext, isLoadingMore, loading, refreshing]);
 
-    const handleDelete = (id: string, title: string) => {
+    // Handle book update
+    const handleUpdate = useCallback((book: Book) => {
+        console.log("Updating book:", book);
+        setSelectedBook(book);
+        setUpdateBookId(book);
+        setModalVisible(true);
+    }, []);
+
+    // Handle book deletion
+    const handleDelete = useCallback((id: string, title: string) => {
         Alert.alert(
             "Delete Book",
             `Are you sure you want to delete "${title}"? This action cannot be undone.`,
@@ -85,30 +145,45 @@ export default function UserBooks({ reload }: { reload: boolean }) {
                     onPress: async () => {
                         try {
                             await api.delete(`/books/${id}`);
-                            setBooks((prev) => prev.filter((b) => b._id !== id));
+                            setBooks((prevBooks) => prevBooks.filter((book) => book._id !== id));
                             Toast.show({
                                 type: "success",
-                                text1: "Book deleted successfully"
+                                text1: "Book deleted successfully",
                             });
-                        } catch (e: any) {
-                            console.error(e);
+
+                            // Update parent component stats
+                            if (onStatsUpdate) {
+                                onStatsUpdate();
+                            }
+                        } catch (error: any) {
+                            console.error('Delete error:', error);
                             Toast.show({
                                 type: "error",
                                 text1: "Failed to delete book",
-                                text2: "Please try again"
+                                text2: error?.response?.data?.message || "Please try again",
                             });
                         }
                     },
                 },
             ]
         );
-    };
+    }, [onStatsUpdate]);
 
-    const handleUpdate = (id: string) => {
-        router.push(`/books/update/${id}`);
-    };
+    // Handle book update completion
+    const handleBookUpdated = useCallback(() => {
+        setModalVisible(false);
+        setSelectedBook(null);
+        fetchUserBooks(1, true); // Refresh the list
+    }, [fetchUserBooks]);
 
-    const renderStars = (rating: number) => {
+    // Handle modal close
+    const handleModalClose = useCallback(() => {
+        setModalVisible(false);
+        setSelectedBook(null);
+    }, []);
+
+    // Render stars component
+    const renderStars = useMemo(() => (rating: number) => {
         const stars = [];
         const fullStars = Math.floor(rating);
         const hasHalfStar = rating % 1 !== 0;
@@ -135,13 +210,15 @@ export default function UserBooks({ reload }: { reload: boolean }) {
                 <Text className="text-gray-500 text-sm ml-2">({rating})</Text>
             </View>
         );
-    };
+    }, []);
 
-    const renderBook = ({ item, index }: any) => (
+    // Render individual book item
+    const renderBook = useCallback(({ item }: { item: Book }) => (
+
         <View
             className="mx-4 mb-6 bg-white rounded-xl shadow-lg overflow-hidden"
             style={{
-                shadowColor: '#000',
+                shadowColor: "#000",
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.1,
                 shadowRadius: 8,
@@ -162,7 +239,7 @@ export default function UserBooks({ reload }: { reload: boolean }) {
                     </View>
                 )}
                 <LinearGradient
-                    colors={['transparent', 'rgba(0,0,0,0.3)']}
+                    colors={["transparent", "rgba(0,0,0,0.3)"]}
                     className="absolute bottom-0 left-0 right-0 h-20"
                 />
 
@@ -191,22 +268,13 @@ export default function UserBooks({ reload }: { reload: boolean }) {
                 </Text>
 
                 {/* Rating */}
-                <View className="mb-4">
-                    {renderStars(item.rating)}
-                </View>
+                <View className="mb-4">{renderStars(item.rating)}</View>
 
                 {/* Action Buttons */}
                 <View className="flex-row space-x-3 gap-2">
                     <TouchableOpacity
                         onPress={() => handleUpdate(item._id)}
                         className="flex-1 bg-blue-500 py-3 px-4 rounded-lg flex-row items-center justify-center"
-                        style={{
-                            shadowColor: '#3b82f6',
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.2,
-                            shadowRadius: 4,
-                            elevation: 3,
-                        }}
                     >
                         <Ionicons name="pencil" size={16} color="white" />
                         <Text className="text-white font-semibold ml-2">Edit</Text>
@@ -215,13 +283,6 @@ export default function UserBooks({ reload }: { reload: boolean }) {
                     <TouchableOpacity
                         onPress={() => handleDelete(item._id, item.title)}
                         className="flex-1 bg-red-500 py-3 px-4 rounded-lg flex-row items-center justify-center"
-                        style={{
-                            shadowColor: '#ef4444',
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.2,
-                            shadowRadius: 4,
-                            elevation: 3,
-                        }}
                     >
                         <Ionicons name="trash" size={16} color="white" />
                         <Text className="text-white font-semibold ml-2">Delete</Text>
@@ -229,7 +290,39 @@ export default function UserBooks({ reload }: { reload: boolean }) {
                 </View>
             </View>
         </View>
-    );
+    ), [renderStars, handleUpdate, handleDelete]);
+
+    // Render footer component
+    const renderFooter = useMemo(() => {
+        if (isLoadingMore) {
+            return (
+                <View className="py-6 items-center">
+                    <ActivityIndicator size="large" color="#d97706" />
+                    <Text className="text-brand-600 mt-2 font-body">
+                        Loading more books...
+                    </Text>
+                </View>
+            );
+        }
+        return null;
+    }, [isLoadingMore]);
+
+    // Render empty component
+    const renderEmpty = useMemo(() => {
+        if (loading) return null;
+
+        return (
+            <View className="flex-1 items-center justify-center px-8 py-16">
+                <Ionicons name="library-outline" size={80} color="#d97706" />
+                <Text className="text-2xl font-serif text-leather mt-4 text-center">
+                    Your Library Awaits
+                </Text>
+                <Text className="text-ink/70 text-center mt-2 leading-relaxed font-body">
+                    Start building your personal collection by adding your first book!
+                </Text>
+            </View>
+        );
+    }, [loading]);
 
     return (
         <View className="flex-1 bg-brand-50">
@@ -237,36 +330,32 @@ export default function UserBooks({ reload }: { reload: boolean }) {
                 data={books}
                 keyExtractor={(item) => item._id}
                 renderItem={renderBook}
-                onEndReached={() => fetchUserBooks(currentPage + 1)}
+                onEndReached={handleLoadMore}
                 onEndReachedThreshold={0.5}
-                ListFooterComponent={
-                    loading ? (
-                        <View className="py-6 items-center">
-                            <ActivityIndicator size="large" color="#d97706" />
-                            <Text className="text-brand-600 mt-2 font-body">Loading more books...</Text>
-                        </View>
-                    ) : null
-                }
-                ListEmptyComponent={
-                    !loading ? (
-                        <View className="flex-1 items-center justify-center px-8 py-16">
-                            <Ionicons name="library-outline" size={80} color="#d97706" />
-                            <Text className="text-2xl font-serif text-leather mt-4 text-center">
-                                Your Library Awaits
-                            </Text>
-                            <Text className="text-ink/70 text-center mt-2 leading-relaxed font-body">
-                                Start building your personal collection by adding your first book!
-                            </Text>
-                        </View>
-                    ) : null
-                }
+                ListFooterComponent={renderFooter}
+                ListEmptyComponent={renderEmpty}
                 contentContainerStyle={{
                     paddingTop: 12,
                     paddingBottom: 100,
-                    flexGrow: 1
+                    flexGrow: 1,
                 }}
                 showsVerticalScrollIndicator={false}
+                removeClippedSubviews={true}
+                maxToRenderPerBatch={10}
+                windowSize={10}
+                initialNumToRender={5}
             />
+
+            {/* Update Modal */}
+            {selectedBook && (
+                <UpdateBookModal
+                    id={updateBookid}
+                    visible={modalVisible}
+                    book={selectedBook}
+                    onClose={handleModalClose}
+                    onUpdated={handleBookUpdated}
+                />
+            )}
         </View>
     );
 }

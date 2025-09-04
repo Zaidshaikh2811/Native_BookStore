@@ -15,6 +15,7 @@ import {Link, useRouter} from "expo-router";
 import {useAuthStore} from "@/store/authStore";
 import api from "@/lib/api"
 import Toast from "react-native-toast-message";
+import ForgotPassword from "@/components/ForgotPassword";
 
 interface LoginProps {
     onNavigateToSignup: () => void;
@@ -28,6 +29,8 @@ const LoginScreen: React.FC<LoginProps> = ({ onNavigateToSignup, onLogin }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState({ email: '', password: '' });
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
+
     const router=useRouter();
 
     const validateEmail = (email: string): boolean => {
@@ -102,7 +105,7 @@ const LoginScreen: React.FC<LoginProps> = ({ onNavigateToSignup, onLogin }) => {
         } catch (error: any) {
             console.log(error);
             const backendMessage =
-                error?.response?.data?.error || error?.error || "Something went wrong";
+                error?.response?.data?.message || error?.message || "Something went wrong";
             Toast.show({
                 type: "error",
                 text1: "Login Failed ❌",
@@ -216,7 +219,7 @@ const LoginScreen: React.FC<LoginProps> = ({ onNavigateToSignup, onLogin }) => {
                         </View>
 
                         {/* Forgot Password */}
-                        <TouchableOpacity className="self-end">
+                        <TouchableOpacity className="self-end"  onPress={() => setShowForgotPassword(true)}>
                             <Text className="text-brand-600 font-body font-medium mt-4">
                                 Forgot Password?
                             </Text>
@@ -260,6 +263,10 @@ const LoginScreen: React.FC<LoginProps> = ({ onNavigateToSignup, onLogin }) => {
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
+            <ForgotPassword
+                visible={showForgotPassword}
+                onClose={() => setShowForgotPassword(false)}
+            />
         </SafeAreaView>
     );
 };
