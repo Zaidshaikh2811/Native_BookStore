@@ -158,7 +158,7 @@ export default function Profile() {
                 <View className="mx-4 mt-4 mb-6 p-6 bg-white rounded-2xl shadow-card border border-brand-100">
                     {/* Avatar Section */}
                     <View className="items-center mb-6">
-                        <View className="w-24 h-24 bg-brand-gradient rounded-full items-center justify-center mb-4 shadow-book">
+                        <View className="w-24 h-24 bg-brand-600 rounded-full items-center justify-center mb-4 shadow-book">
                             <Text className="text-3xl font-serif font-bold text-white">
                                 {user?.name?.charAt(0)?.toUpperCase() || 'G'}
                             </Text>
@@ -210,19 +210,19 @@ export default function Profile() {
                     {/* Action Buttons */}
                     <View className="space-y-3">
                         <TouchableOpacity
-                            className="bg-brand-500 rounded-lg py-3 px-4 shadow-book"
+                            className="bg-brand-500 rounded-lg py-3 px-4 shadow-book mt-2"
                             onPress={() => setShowUpdateProfile(true)}
                         >
                             <View className="flex-row items-center justify-center">
                                 <Ionicons name="person-outline" size={20} color="white" />
-                                <Text className="text-white font-primary font-semibold ml-2">
+                                <Text className="text-white font-primary font-semibold ml-2 ">
                                     Update Profile
                                 </Text>
                             </View>
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            className="bg-white border-2 border-brand-300 rounded-lg py-3 px-4"
+                            className="bg-white border-2 border-brand-300 rounded-lg py-3 px-4 mt-4"
                             onPress={() => setShowForgotPassword(true)}
                         >
                             <View className="flex-row items-center justify-center">
@@ -234,7 +234,7 @@ export default function Profile() {
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            className="bg-gray-100 border border-gray-300 rounded-lg py-3 px-4"
+                            className="bg-gray-100 border border-gray-300 rounded-lg py-3 px-4 mt-4"
                             onPress={handleLogout}
                         >
                             <View className="flex-row items-center justify-center">

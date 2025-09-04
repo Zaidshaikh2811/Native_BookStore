@@ -89,7 +89,10 @@ export default function Home() {
     };
 
     const renderBook = ({ item }: any) => (
-        <View className="mx-4 mb-6 bg-paper rounded-2xl shadow-card overflow-hidden border border-brand-100">
+        <TouchableOpacity
+            onPress={() => router.push(`/books/${item._id}`)}
+            className="mx-4 mb-6 bg-paper rounded-2xl shadow-card overflow-hidden border border-brand-100"
+        >
             {/* Book Image */}
             <View className="relative">
                 {item.image ? (
@@ -157,11 +160,11 @@ export default function Home() {
                     )}
                 </View>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 
     const renderHeader = () => (
-        <View className="px-4 pb-6">
+        <View className="px-4 pb-6 mt-4">
             {/* User Welcome Section */}
             <View className="flex-row items-center justify-between mb-8">
                 <View className="flex-1">

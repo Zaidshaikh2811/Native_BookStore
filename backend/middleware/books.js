@@ -354,18 +354,14 @@ export const getIndBooks = async (req, res, next) => {
                 message: "User Not Authenticated"
             });
         }
-        const userId= req.decoded.id;
         const { bookId } = req.params;
 
         if(!bookId){
             return res.status(400).send({error:"Please enter a book id"})
         }
-        console.log("bookId:",bookId)
-        console.log("userId:",userId)
 
         const book=await Book.findOne({
             _id: bookId,
-            user: userId
         }).populate('user', 'name email')
         console.log(book)
         if (!book) {

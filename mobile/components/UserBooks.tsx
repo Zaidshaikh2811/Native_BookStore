@@ -15,6 +15,7 @@ import Toast from "react-native-toast-message";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import UpdateBookModal from "@/components/UpdateBookModal";
+import {useRouter} from "expo-router";
 
 dayjs.extend(relativeTime);
 
@@ -49,6 +50,7 @@ export default function UserBooks({ refreshTrigger, onStatsUpdate }: UserBooksPr
     const [modalVisible, setModalVisible] = useState(false);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [updateBookid, setUpdateBookId] = useState<number | null>(null);
+    const router=useRouter() ;
 
     // Fetch user books with proper error handling
     const fetchUserBooks = useCallback(
@@ -214,7 +216,9 @@ export default function UserBooks({ refreshTrigger, onStatsUpdate }: UserBooksPr
 
     // Render individual book item
     const renderBook = useCallback(({ item }: { item: Book }) => (
-
+        <TouchableOpacity
+            onPress={() => router.push(`/books/${item._id}`)}
+        >
         <View
             className="mx-4 mb-6 bg-white rounded-xl shadow-lg overflow-hidden"
             style={{
@@ -290,6 +294,7 @@ export default function UserBooks({ refreshTrigger, onStatsUpdate }: UserBooksPr
                 </View>
             </View>
         </View>
+        </TouchableOpacity>
     ), [renderStars, handleUpdate, handleDelete]);
 
     // Render footer component
